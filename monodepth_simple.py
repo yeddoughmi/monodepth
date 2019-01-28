@@ -11,21 +11,18 @@ from __future__ import absolute_import, division, print_function
 
 # only keep warnings and errors
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL']='0'
 
+# import the necessary packages
 import numpy as np
+import cv2
 import argparse
-import re
-import time
-import tensorflow as tf
-import tensorflow.contrib.slim as slim
 import scipy.misc
 import matplotlib.pyplot as plt
 
 from monodepth_model import *
-from monodepth_dataloader import *
 from average_gradients import *
-
 parser = argparse.ArgumentParser(description='Monodepth TensorFlow implementation.')
 
 parser.add_argument('--encoder',          type=str,   help='type of encoder, vgg or resnet50', default='vgg')
@@ -35,6 +32,7 @@ parser.add_argument('--input_height',     type=int,   help='input height', defau
 parser.add_argument('--input_width',      type=int,   help='input width', default=512)
 
 args = parser.parse_args()
+
 
 def post_process_disparity(disp):
     _, h, w = disp.shape
@@ -52,7 +50,11 @@ def test_simple(params):
     left  = tf.placeholder(tf.float32, [2, args.input_height, args.input_width, 3])
     model = MonodepthModel(params, "test", left, None)
 
-    input_image = scipy.misc.imread(args.image_path, mode="RGB")
+    input_image =  cv2.imread(args.image_path)
+    #input_image[:,:,1] = 0
+    #input_image[:,:,1] = 0
+    #input_image[:,:,2] = 0
+
     original_height, original_width, num_channels = input_image.shape
     input_image = scipy.misc.imresize(input_image, [args.input_height, args.input_width], interp='lanczos')
     input_image = input_image.astype(np.float32) / 255
